@@ -1,5 +1,8 @@
 import argparse
 import time
+import atexit
+
+import lights
 
 from inside_sensor import InsideSensor
 from outside_sensor import OutsideSensor
@@ -29,15 +32,51 @@ if __name__ == '__main__':
     if args.logger_password is None:
         parser.error("The logger_password argument is required.")
 
+    lights.switch_status_light()
+
     inside_sensor = InsideSensor(args.serial_no)
     outside_sensor = OutsideSensor()
 
     api_service = ApiService(args.api_host, args.api_port)
 
+    atexit.register(lights.cleanup)
+
     while True:
 
         outside_log = outside_sensor.start()
         inside_log = inside_sensor.start()
+
+        # if lta radon is 0 - 75, green light
+        # if lta radon is 75 - 100, yellow light
+        # if lta radon is 100+, red light
+
+        # if sta radon is 0 -4 , green light
+        # if sta radon is 4 - 6, yellow light
+        # if sta radon is 6+, red light
+
+        lta_radon = inside_log["radon_lta"]
+        sta_radon = inside_log["radon_sta"]
+
+        if lta_radon <= 75:
+            lta_light = "green"
+        elif lta_radon <= 100:
+            lta_light = "yellow"
+        else:
+            lta_light = "red"
+
+        if sta_radon <= 4:
+            sta_light = "green"
+        elif sta_radon <= 6:
+            sta_light = "yellow"
+        else:
+            sta_light = "red"
+
+        if lta_light == "red" or sta_light == "red":
+            lights.switch_red_light()
+        elif lta_light == "yellow" or sta_light == "yellow":
+            lights.switch_yellow_light()
+        else:
+            lights.switch_green_light()
 
         body = {
             "loggerId": args.logger_id,
@@ -50,7 +89,8 @@ if __name__ == '__main__':
             "logInside": {
                 "temperature": inside_log["temperature"],
                 "humidity": inside_log["humidity"],
-                "radon": inside_log["radon_sta"],
+                "radonLta": inside_log["radon_lta"],
+                "radonSta": inside_log["radon_sta"],
             }
         }
 
