@@ -8,13 +8,13 @@ class ApiService:
         self.host = host
         self.port = port
 
-    def post(self, body):
+    def post(self, body, path):
         conn = http.client.HTTPConnection(self.host, self.port)
         payload = json.dumps(body)
         headers = {
             'Content-Type': "application/json",
         }
-        conn.request("POST", "/log/create", payload, headers)
+        conn.request("POST", path, payload, headers)
         response = conn.getresponse()
         data = response.read()
         return data.decode("utf-8")
