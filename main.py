@@ -3,6 +3,7 @@ import time
 import atexit
 
 import lights
+import gps
 
 from inside_sensor import InsideSensor
 from outside_sensor import OutsideSensor
@@ -40,6 +41,7 @@ if __name__ == '__main__':
     api_service = ApiService(args.api_host, args.api_port)
 
     atexit.register(lights.cleanup)
+    atexit.register(inside_sensor.disconnect)
 
     while True:
 
@@ -93,6 +95,18 @@ if __name__ == '__main__':
                 "radonSta": inside_log["radon_sta"],
             }
         }
+        print(f"sending data to {args.api_host}:{args.api_port}/log/create -> {body}")
+        response = api_service.post(body, "/log/create")
+        print(f"response to {args.api_host}:{args.api_port}/log/create -> {response}")
 
-        api_service.post(body)
-        time.sleep(150)
+        location = gps.start()
+        body = {
+            "loggerId": args.logger_id,
+            "loggerPassword": args.logger_password,
+            "latitude": location["latitude"],
+            "longitude": location["longitude"],
+        }
+        print(f"sending data to {args.api_host}:{args.api_port}/location/update -> {body}")
+        response = api_service.post(body, "/location/update")
+        print(f"response to {args.api_host}:{args.api_port}/location/update -> {response}")
+        time.sleep(120)
