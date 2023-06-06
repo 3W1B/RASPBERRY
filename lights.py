@@ -42,4 +42,5 @@ def switch_yellow_light():
     GPIO.output(RadonLight.BLUE.value, False)
 
 def cleanup():
+    print("Cleaning up GPIO")
     GPIO.cleanup()

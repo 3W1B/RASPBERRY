@@ -53,9 +53,12 @@ class InsideSensor:
 
     def disconnect(self):
         if self._periph is not None:
+            print(f"Disconnecting from {self.mac_addr}")
             self._periph.disconnect()
             self._periph = None
             self._char = None
+        else:
+            print("No connection to disconnect from")
 
     def start(self):
         self.connect(retries=3)

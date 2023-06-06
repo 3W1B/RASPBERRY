@@ -100,6 +100,10 @@ if __name__ == '__main__':
         print(f"response to {args.api_host}:{args.api_port}/log/create -> {response}")
 
         location = gps.start()
+        while location is None:
+            print("Retrying GPS location...")
+            time.sleep(5)
+            location = gps.start()
         body = {
             "loggerId": args.logger_id,
             "loggerPassword": args.logger_password,
