@@ -100,17 +100,26 @@ if __name__ == '__main__':
         print(f"response to {args.api_host}:{args.api_port}/log/create -> {response}")
 
         location = gps.start()
+        max = 10
+        i = 0
         while location is None:
             print("Retrying GPS location...")
             time.sleep(5)
             location = gps.start()
+            i += 1
+            if i == max:
+                print("Exceeded max retries for GPS location, skipping...")
+                break
+
         body = {
             "loggerId": args.logger_id,
             "loggerPassword": args.logger_password,
             "latitude": location["latitude"],
             "longitude": location["longitude"],
         }
+        wait_time = 5 * 60
         print(f"sending data to {args.api_host}:{args.api_port}/location/update -> {body}")
         response = api_service.post(body, "/location/update")
         print(f"response to {args.api_host}:{args.api_port}/location/update -> {response}")
-        time.sleep(120)
+        print(f"sleeping for {wait_time} seconds")
+        time.sleep(wait_time)
