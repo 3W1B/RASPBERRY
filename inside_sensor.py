@@ -61,7 +61,7 @@ class InsideSensor:
             print("No connection to disconnect from")
 
     def start(self):
-        self.connect(retries=3)
+        self.connect(retries=10)
         current_values = self.read()
         self.disconnect()
         return current_values.to_dict()
